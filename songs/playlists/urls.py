@@ -2,6 +2,7 @@ from django.urls import path
 from . import views
 from rest_framework.authtoken import views as auth_views
 urlpatterns = [
+    path('', view.main),
     path('songs',views.songs),
     path('songs/<int:id>', views.song_details),
     path('playlists/<int:id>', views.playlist_details),
