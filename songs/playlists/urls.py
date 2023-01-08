@@ -8,6 +8,6 @@ urlpatterns = [
     path('playlists', views.playlists),
     path('add-to-playlist', views.add_to_playlist),
     path('remove-from-playlist', views.remove_from_playlist),
-    path('users/token', auth_views.obtain_auth_token),
+    path('users/get-token', auth_views.obtain_auth_token),
     path('users/register', views.create_user)
 ]
