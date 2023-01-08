@@ -6,6 +6,12 @@ from .serializers import SongSerializer, PlaylistSerializer, AllPlaylistsSeriali
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import AllowAny
+from django.template import loader
+
+@permission_classes([AllowAny])
+def main(request):
+    template = loader.get_template('main.html')
+    return HttpResponse(template.render())
 
 
 @api_view(['POST'])
