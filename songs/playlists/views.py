@@ -6,7 +6,7 @@ from .serializers import SongSerializer, PlaylistSerializer, AllPlaylistsSeriali
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import AllowAny
-from django.contrib.auth.models import User
+
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
@@ -19,8 +19,8 @@ def create_user(request):
                 "username" : serializer.data.get('username'),
                 "email" : serializer.data.get('email'),
                 "first_name" : serializer.data.get('first_name'),
-                "last_name" : serializer.data.get('last_name')
-                }, 
+                "last_name" : serializer.data.get('last_name'),
+                },
             status=status.HTTP_201_CREATED
             )
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -37,8 +37,8 @@ def songs(request):
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response({"Error": "the data is not in valid form"}, serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 @api_view(['GET', 'PUT', 'DELETE'])
 def song_details(request, id):
@@ -55,7 +55,7 @@ def song_details(request, id):
             x.songs.remove(song)
         song.playlists.clear()
         song.delete()
-        return Response(status=status.HTTP_200_OK)
+        return Response({"details" : "deleted the song"},status=status.HTTP_200_OK)
     elif request.method == 'PUT':
         serializer = SongSerializer(song, data=request.data, partial=True)
         if serializer.is_valid():
@@ -79,10 +79,12 @@ def playlist_details(request, id):
                 for x in playlist.songs.all():
                     x.playlists.clear()
                     x.delete()
+                    playlist.delete()
+                    return Response({"details" : "the playlist and all songs in it are deleted" } , status=status.HTTP_200_OK)
         playlist.delete()
-        return Response(status=status.HTTP_200_OK)
+        return Response({"details" : "the playlist is deleted"}, status=status.HTTP_200_OK)
     if request.method == 'PUT':
-        serializer = PlaylistSerializer(playlist, data=request.data, partial=True)
+        serializer = PlaylistSerializer(playlist, data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -117,9 +119,9 @@ def add_to_playlist(request):
         if song in playlist.songs.all():
             return Response({"Error" : "The song is already in the playlist"}, status=status.HTTP_409_CONFLICT)
         playlist.songs.add(song)
-        return Response(status=status.HTTP_201_CREATED)
-    return Response({"Error" : "The data is not in valid form"},status=status.HTTP_400_BAD_REQUEST)
-    
+        return Response({"details" : "the song has been add to the playlist"},status=status.HTTP_200_OK)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 @api_view(['POST'])
 def remove_from_playlist(request):
     serializer = PlaylistAndSongSerializer(data=request.data)
@@ -137,6 +139,5 @@ def remove_from_playlist(request):
         if song not in playlist.songs.all():
             return Response({"Error" : "the song is not present in the playlist" }, status=status.HTTP_404_NOT_FOUND)
         playlist.songs.remove(song)
-        return Response(status=status.HTTP_200_OK)
-    return Response({"Error" : "the data is not in valid form"}, status=status.HTTP_400_BAD_REQUEST)
-    
+        return Response({"details" : "the song has been removed from the playlist"},status=status.HTTP_200_OK)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
